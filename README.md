@@ -12,5 +12,8 @@ El plazo de entrega del TP es hasta el 05/09, puede puede ser extendido una sema
 - `virtualenv venv`
 - `./venv/scripts/activate` (solo en linux)
 - `pip install -r requirements.txt`
+- `cd database`
+- `python database.py` (Recordar no tener el cliente de postgresql ejecutando porque produce error)
+- `cd..`
 - `cd server`
 - `python server.py`
