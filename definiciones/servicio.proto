@@ -118,7 +118,7 @@ message RequestGetRecipiesByFilters{
     int32 prepatarionTimeMinutesMax = 5;
 }
 
-message ResponseRecipiesRequestGetUserResponseUser{
+message ResponseRecipies{
     repeated Reciepe recipies = 1;
 }
 
