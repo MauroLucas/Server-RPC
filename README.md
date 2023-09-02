@@ -10,10 +10,11 @@ El plazo de entrega del TP es hasta el 05/09, puede puede ser extendido una sema
 - `cd .\Server-RPC\`
 - `pip3 install virtualenv` (El server se corre antes que el cliente)
 - `virtualenv venv`
+- `Set-ExecutionPolicy -Scope LocalMachine unrestricted` (Usando powershell)
 - `./venv/scripts/activate` (solo en linux)
 - `pip install -r requirements.txt`
 - `cd database`
-- `python database.py` (Recordar no tener el cliente de postgresql ejecutando porque produce error)
+- `python database.py` (Recordar no tener el cliente de postgresql ejecutando porque produce error, **es posible que tengas que cambiar la contrase;a**)
 - `cd..`
 - `cd server`
 - `python server.py`

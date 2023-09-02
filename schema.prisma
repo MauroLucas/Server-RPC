@@ -1,0 +1,58 @@
+generator client {
+    provider = "prisma-client-py"
+}
+
+datasource db {
+    provider = "sqlite"
+    url      = "file:database.db"
+}
+
+model User {
+    id           String   @id @default(uuid())
+    fullname     String
+    email        String   @unique
+    username     String
+    password     String
+    createdAt    DateTime @default(now())
+    updatedAt    DateTime @updatedAt
+    myRecipies   Recipe[] @relation("myRecipies")
+    likedRecipes Recipe[] @relation("likedRecipes")
+}
+
+model Recipe {
+    id          String       @id @default(uuid())
+    title       String
+    description String?
+    duration    Int
+    imgs        Image[]
+    ingredients Ingredient[]
+    category    Category     @relation(fields: [categoryId], references: [id])
+    categoryId  String
+    createdAt   DateTime     @default(now())
+    updatedAt   DateTime     @updatedAt
+    author      User?        @relation("myRecipies", fields: [authorId], references: [id])
+    authorId    String?
+    likedBy     User[]       @relation("likedRecipes")
+}
+
+model Image {
+    url      String  @id
+    Recipe   Recipe? @relation(fields: [recipeId], references: [id])
+    recipeId String?
+}
+
+model Ingredient {
+    id        String   @id @default(uuid())
+    name      String
+    recipes   Recipe[]
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+model Category {
+    id        String   @id @default(uuid())
+    name      String
+    recipes   Recipe[]
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
