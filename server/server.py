@@ -1,5 +1,5 @@
 from servicio_pb2_grpc import ChefEnCasaServicer, add_ChefEnCasaServicer_to_server
-from servicio_pb2 import ResponseUser
+from servicio_pb2 import ResponseUser, ResponseIngredients, Ingredient
 
 import grpc
 from concurrent import futures
@@ -19,6 +19,20 @@ db.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT);
 cursor = db.cursor();
 
 class ServiceChefEnCasa(ChefEnCasaServicer):
+    def GetAllIngredients(self, request, context):
+        allIngredients = []
+        try:
+            query = "SELECT i.id , i.name FROM ingredient as i"
+            cursor.execute(query)
+            for row in cursor.fetchall():
+                ingredient = Ingredient(id = row[0] , name = row[1])
+                allIngredients.append(ingredient)
+            return ResponseIngredients(ingredients = allIngredients)
+
+        except BaseException as error:
+            print(f"Unexpected {error=}, {type(error)=}")
+            return ResponseIngredients(ingredients = allIngredients)
+
     def GetUser(self, request, context):
         try:
             query = "SELECT u.id, u.name, u.last_name, u.username from users as u WHERE u.username = '{0}' AND u.password = '{1}'".format(request.userName, request.password)
