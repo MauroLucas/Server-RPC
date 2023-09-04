@@ -1,5 +1,5 @@
 from servicio_pb2_grpc import ChefEnCasaServicer, add_ChefEnCasaServicer_to_server
-from servicio_pb2 import ResponseUser, ResponseIngredients, Ingredient, Category , ResponseCategorys
+from servicio_pb2 import ResponseUser, ResponseIngredients, Ingredient, Category , ResponseCategorys, ResponseRecipes, Reciepe,Photo
 
 import grpc
 from concurrent import futures
@@ -47,6 +47,63 @@ class ServiceChefEnCasa(ChefEnCasaServicer):
         except BaseException as error:
             print(f"Unexpected {error=}, {type(error)=}")
             return ResponseIngredients(ingredients = allIngredients)
+    def GetAllRecipes(self, request, context):
+        allRecipes = []
+        try:
+
+            # inner join for recipe_photos and recipe_ingredients
+
+            query_recipes = """
+            SELECT * FROM recipes as r
+            """
+            cursor.execute(query_recipes)
+
+
+           
+            for row in cursor.fetchall():
+                print(row)
+
+                query_photos = """
+                    SELECT * FROM recipe_photos as rp WHERE rp.id_recipe = {0}
+                    """.format(row[0])
+                
+                cursor.execute(query_photos)
+                photos = []
+                for row_photo in cursor.fetchall():
+                    photo = Photo(id = row_photo[0], url = row_photo[1])
+                    photos.append(photo)
+
+
+                query_ingredients = """
+                    SELECT i.id, i.name FROM recipe_ingredients as ri INNER JOIN ingredient as i ON ri.id_ingredient = i.id WHERE ri.id_recipe = {0}
+                    """.format(row[0])
+                
+                cursor.execute(query_ingredients)
+                ingredients = []
+                for row_ingredient in cursor.fetchall():
+                    ingredient = Ingredient(id = row_ingredient[0], name = row_ingredient[1])
+                    ingredients.append(ingredient)
+
+                query_category = """
+                    SELECT c.id, c.name FROM category as c WHERE c.id = {0}
+                    """.format(row[5])
+                cursor.execute(query_category)
+                result_category = cursor.fetchone()
+                category = Category(id = result_category[0], name = result_category[1])
+
+
+                print(ingredients)
+
+
+                recipe = Reciepe(idReciepe = row[0], title=row[1], description=row[2], photos=photos, ingredients=ingredients, category=category, prepatarionTimeMinutes=row[3], idUser=row[4])
+                allRecipes.append(recipe)
+            return ResponseRecipes(recipes = allRecipes)
+
+        except BaseException as error:
+            print(f"Unexpected {error=}, {type(error)=}")
+            return ResponseRecipes(recipes = allRecipes)
+
+
 
     def GetUser(self, request, context):
         try:

@@ -50,9 +50,9 @@ cursor.execute("INSERT INTO category (name) VALUES ('Entrada'), ('Plato Principa
 cursor.execute("INSERT INTO users (name, last_name, email, username, password) VALUES ('Juan', 'Perez', 'juan@example.com', 'juanperez', '1234'), ('Maria', 'Lopez', 'maria@example.com', 'marialopez', '1234'), ('Gonzalo', 'Ramirez', 'pedro@example.com', 'gonzaloramirez', '1234');")
 cursor.execute("INSERT INTO user_followers (id_user, id_chef_user) VALUES ((SELECT id from users where username = 'juanperez'),(SELECT id from users where username = 'marialopez'))")
 cursor.execute("INSERT INTO recipes (title, description, preparation_time_minutes, id_user, id_category) VALUES('Tarta de Manzana', 'Una deliciosa tarta de manzana casera.', 45, 1, 3), ('Pollo al Curry', 'Receta de pollo al curry con arroz basmati.', 60, 2, 2), ('Ensalada César', 'Ensalada fresca con aderezo César.', 20, 3, 5);")
-cursor.execute("INSERT INTO recipe_photos (url, id_recipe) VALUES ('url_foto_tarta_manzana_1.jpg', 1), ('url_foto_tarta_manzana_2.jpg', 1), ('url_foto_tarta_manzana_3.jpg', 1);")
-cursor.execute("INSERT INTO recipe_photos (url, id_recipe) VALUES ('url_foto_pollo_curry_1.jpg', 2), ('url_foto_pollo_curry_2.jpg', 2), ('url_foto_pollo_curry_3.jpg', 2);")
-cursor.execute("INSERT INTO recipe_photos (url, id_recipe) VALUES ('url_foto_ensalada_cesar_1.jpg', 3), ('url_foto_ensalada_cesar_2.jpg', 3), ('url_foto_ensalada_cesar_3.jpg', 3);")
+cursor.execute("INSERT INTO recipe_photos (url, id_recipe) VALUES ('https://images.unsplash.com/photo-1568571780765-9276ac8b75a2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80', 1), ('https://images.unsplash.com/photo-1568571780765-9276ac8b75a2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80', 1), ('https://images.unsplash.com/photo-1568571780765-9276ac8b75a2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80', 1);")
+cursor.execute("INSERT INTO recipe_photos (url, id_recipe) VALUES ('https://images.unsplash.com/photo-1574484284002-952d92456975?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80', 2), ('https://images.unsplash.com/photo-1574484284002-952d92456975?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80', 2), ('https://images.unsplash.com/photo-1574484284002-952d92456975?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80', 2);")
+cursor.execute("INSERT INTO recipe_photos (url, id_recipe) VALUES ('https://images.unsplash.com/photo-1505253716362-afaea1d3d1af?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80', 3), ('https://images.unsplash.com/photo-1505253716362-afaea1d3d1af?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80', 3), ('https://images.unsplash.com/photo-1505253716362-afaea1d3d1af?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80', 3);")
 cursor.execute("INSERT INTO recipe_steps (description, id_recipe) VALUES ('Pelar y cortar las manzanas en rodajas finas.', 1), ('Forrar un molde con la masa para tarta.', 1), ('Colocar las manzanas sobre la masa.', 1), ('Hornear durante 35-40 minutos a 180°C.', 1);")
 cursor.execute("INSERT INTO recipe_steps (description, id_recipe) VALUES ('Cortar el pollo en trozos pequeños.', 2), ('Freír el pollo en una sartén hasta que esté dorado.', 2), ('Agregar la mezcla de curry y cocinar durante 5 minutos.', 2), ('Servir el pollo al curry sobre arroz basmati.', 2);")
 cursor.execute("INSERT INTO recipe_steps (description, id_recipe) VALUES ('Lavar y cortar la lechuga en trozos.', 3), ('Preparar la salsa César con mayonesa, ajo y limón.', 3), ('Mezclar la lechuga con la salsa y agregar crutones.', 3), ('Servir la ensalada César con parmesano rallado.', 3);")
@@ -61,6 +61,10 @@ cursor.execute("INSERT INTO recipe_ingredients (id_ingredient, id_recipe) VALUES
 cursor.execute("INSERT INTO recipe_ingredients (id_ingredient, id_recipe) VALUES (5, 3), (7, 3), (8, 3);")
 cursor.execute("INSERT INTO user_favorite_recipes (id_user, id_recipe) VALUES (1, 1), (1, 3);")
 cursor.execute("INSERT INTO user_favorite_recipes (id_user, id_recipe) VALUES (2, 2);")
+
+
+
+
 
 print("Inserts ran succesfully.")
 
