@@ -1,5 +1,5 @@
 from servicio_pb2_grpc import ChefEnCasaServicer, add_ChefEnCasaServicer_to_server
-from servicio_pb2 import ResponseUser, ResponseIngredients, Ingredient, Category , ResponseCategorys, ResponseRecipes, Reciepe,Photo
+from servicio_pb2 import ResponseUser, ResponseIngredients, Ingredient, Category , ResponseCategorys, ResponseRecipes, Reciepe,Photo, User
 
 import grpc
 from concurrent import futures
@@ -9,7 +9,7 @@ from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
 db = psycopg2.connect(
     user="postgres",
-    password="root",
+    password="1234",
     host="localhost",
     port='5432',
     database = "chefencasa"
@@ -91,11 +91,18 @@ class ServiceChefEnCasa(ChefEnCasaServicer):
                 result_category = cursor.fetchone()
                 category = Category(id = result_category[0], name = result_category[1])
 
+                query_user = """
+                    SELECT u.id, u.name, u.last_name, u.username FROM users as u WHERE u.id = {0}
+                    """.format(row[0])
+                cursor.execute(query_user)
+                result_user = cursor.fetchone()
+                user = User(id = result_user[0], name = result_user[1], userName = result_user[2])
+
 
                 print(ingredients)
 
 
-                recipe = Reciepe(idReciepe = row[0], title=row[1], description=row[2], photos=photos, ingredients=ingredients, category=category, prepatarionTimeMinutes=row[3], idUser=row[4])
+                recipe = Reciepe(idReciepe = row[0], title=row[1], description=row[2], photos=photos, ingredients=ingredients, category=category, prepatarionTimeMinutes=row[3], user=user)
                 allRecipes.append(recipe)
             return ResponseRecipes(recipes = allRecipes)
 

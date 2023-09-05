@@ -2,7 +2,7 @@ import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 db = psycopg2.connect(
     user="postgres",
-    password="root",
+    password="1234",
     host="localhost",
     port='5432'
 )
@@ -24,7 +24,7 @@ print("The chefencasa database was created succesfully.")
 
 db = psycopg2.connect(
     user="postgres",
-    password="root",
+    password="1234",
     host="localhost",
     port='5432',
     database = name_Database
