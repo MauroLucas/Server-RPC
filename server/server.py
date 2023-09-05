@@ -43,6 +43,10 @@ class ServiceChefEnCasa(ChefEnCasaServicer):
                     query_recipes = """
                         SELECT * FROM recipes as r where r.preparation_time_minutes <= {0}
                     """.format(request.prepatarionTimeMinutesMax)
+            if (request.title == "." and request.category.id != 0):
+                query_recipes = """
+                    SELECT * FROM recipes as r where r.id_category = {0}
+                """.format(request.category.id)
 
             print(query_recipes)
             
