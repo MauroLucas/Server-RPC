@@ -318,6 +318,18 @@ class ServiceChefEnCasa(ChefEnCasaServicer):
 
 
 
+    def GetUserById(self, request, context):
+        try:
+            query = "SELECT u.id, u.name, u.last_name, u.username from users as u WHERE u.id = '{0}'".format(request.id)
+            cursor.execute(query)
+            result = cursor.fetchone()
+            if(result is None):
+                return ResponseUser(id=-1)                  
+            else:
+                return ResponseUser(id = result[0], name = result[1], lastName = result[2], userName = result[3])                          
+        except BaseException as error:
+            print(f"Unexpected {error=}, {type(error)=}")
+            return ResponseUser(id=-1)
     def GetUser(self, request, context):
         try:
             query = "SELECT u.id, u.name, u.last_name, u.username from users as u WHERE u.username = '{0}' AND u.password = '{1}'".format(request.userName, request.password)

@@ -19,6 +19,11 @@ class ChefEnCasaStub(object):
                 request_serializer=servicio__pb2.RequestGetUser.SerializeToString,
                 response_deserializer=servicio__pb2.ResponseUser.FromString,
                 )
+        self.GetUserById = channel.unary_unary(
+                '/ChefEnCasa.ChefEnCasa/GetUserById',
+                request_serializer=servicio__pb2.RequestByUser.SerializeToString,
+                response_deserializer=servicio__pb2.ResponseUser.FromString,
+                )
         self.GetAllRecipes = channel.unary_unary(
                 '/ChefEnCasa.ChefEnCasa/GetAllRecipes',
                 request_serializer=servicio__pb2.Empty.SerializeToString,
@@ -90,6 +95,12 @@ class ChefEnCasaServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def GetUser(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetUserById(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -181,6 +192,11 @@ def add_ChefEnCasaServicer_to_server(servicer, server):
                     request_deserializer=servicio__pb2.RequestGetUser.FromString,
                     response_serializer=servicio__pb2.ResponseUser.SerializeToString,
             ),
+            'GetUserById': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetUserById,
+                    request_deserializer=servicio__pb2.RequestByUser.FromString,
+                    response_serializer=servicio__pb2.ResponseUser.SerializeToString,
+            ),
             'GetAllRecipes': grpc.unary_unary_rpc_method_handler(
                     servicer.GetAllRecipes,
                     request_deserializer=servicio__pb2.Empty.FromString,
@@ -269,6 +285,23 @@ class ChefEnCasa(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/ChefEnCasa.ChefEnCasa/GetUser',
             servicio__pb2.RequestGetUser.SerializeToString,
+            servicio__pb2.ResponseUser.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetUserById(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/ChefEnCasa.ChefEnCasa/GetUserById',
+            servicio__pb2.RequestByUser.SerializeToString,
             servicio__pb2.ResponseUser.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
