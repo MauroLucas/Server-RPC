@@ -1,5 +1,5 @@
 from servicio_pb2_grpc import ChefEnCasaServicer, add_ChefEnCasaServicer_to_server
-from servicio_pb2 import ResponseUser, ResponseIngredients, Ingredient, Category , ResponseCategorys, ResponseRecipes, Reciepe,Photo, User
+from servicio_pb2 import ResponseUser, ResponseIngredients, Ingredient, Category , ResponseCategorys, ResponseRecipes, Reciepe,Photo, User, Response
 
 import grpc
 from concurrent import futures
@@ -14,7 +14,6 @@ db = psycopg2.connect(
     port='5432',
     database = "chefencasa"
 )
-db.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT);
 
 cursor = db.cursor();
 
@@ -250,6 +249,21 @@ class ServiceChefEnCasa(ChefEnCasaServicer):
         except BaseException as error:
             print(f"Unexpected {error=}, {type(error)=}")
             return ResponseUser(id=-1)
+    
+    def RegisterUser(self, request, context):
+        try:
+            query = "INSERT INTO users (name, last_name, email, username, password) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}') RETURNING id;".format(request.name, request.lastName, request.email, request.userName,request.password)
+            cursor.execute(query)       
+            result = cursor.fetchone()
+            idUser = result[0]
+            print(idUser)
+            db.commit()
+            return Response(message = '{0}'.format(idUser))
+                                    
+        except BaseException as error:
+            print(f"Unexpected {error=}, {type(error)=}")
+            db.rollback()
+            return Response(message = "-1")
 
 def start():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
