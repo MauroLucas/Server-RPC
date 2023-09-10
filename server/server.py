@@ -357,6 +357,41 @@ class ServiceChefEnCasa(ChefEnCasaServicer):
             print(f"Unexpected {error=}, {type(error)=}")
             db.rollback()
             return Response(message = "-1")
+    def UpdateReciepe(self, request, context):
+        try:
+            query = 1
+            query = "UPDATE recipes set title = '{0}', description = '{1}', preparation_time_minutes = '{2}', id_category = '{3}' WHERE id = '{4}';".format(request.title,request.description,request.prepatarionTimeMinutes,request.category.id,request.idReciepe)
+            cursor.execute(query)
+            
+            query = "DELETE FROM recipe_photos WHERE id_recipe = '{0}';".format(request.idReciepe)
+            cursor.execute(query)
+            for photo in request.photos:
+                query = "INSERT INTO recipe_photos (url,id_recipe) VALUES ('{0}','{1}') ;".format(photo.url,request.idReciepe)
+                cursor.execute(query)
+
+            query = "DELETE FROM recipe_steps WHERE id_recipe = '{0}'".format(request.idReciepe)
+            cursor.execute(query)
+            for stept in request.stepts:
+                print(stept)
+                query = "INSERT INTO recipe_steps (description,id_recipe) VALUES  ('{0}','{1}');".format(stept.description,request.idReciepe)
+                cursor.execute(query)
+            
+            query = "DELETE FROM recipe_ingredients WHERE id_recipe = '{0}'".format(request.idReciepe)
+            cursor.execute(query)
+            for ingredient in request.ingredients:
+                query = "INSERT INTO recipe_ingredients (id_ingredient,id_recipe) VALUES('{0}','{1}')".format(ingredient.id,request.idReciepe)
+                cursor.execute(query)
+            
+            db.commit()
+            return Response(message = "Recipe updated succesfully")
+            
+        
+        except BaseException as error:
+            print(f"Unexpected {error=}, {type(error)=}")
+            db.rollback()
+            return Response(message = "Error")
+
+        
 
 def start():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
