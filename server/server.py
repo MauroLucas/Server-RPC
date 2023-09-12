@@ -18,6 +18,66 @@ db = psycopg2.connect(
 cursor = db.cursor();
 
 class ServiceChefEnCasa(ChefEnCasaServicer):
+    def CreateRecipe(self, request, context):
+        print(request)
+        try:
+            query = "INSERT INTO recipes (title, description, preparation_time_minutes, id_user, id_category) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}') RETURNING id;".format(request.title,request.description,request.prepatarionTimeMinutes,request.idUser,request.category.id)
+            cursor.execute(query)
+            result = cursor.fetchone()
+            idRecipe = result[0]
+            print(idRecipe)
+            db.commit()
+            for photo in request.photos:
+                query = "INSERT INTO recipe_photos (url,id_recipe) VALUES ('{0}','{1}') ;".format(photo.url,idRecipe)
+                cursor.execute(query)
+            for stept in request.stepts:
+                print(stept)
+                query = "INSERT INTO recipe_steps (description,id_recipe) VALUES  ('{0}','{1}');".format(stept.description,idRecipe)
+                cursor.execute(query)
+            for ingredient in request.ingredients:
+                query = "INSERT INTO recipe_ingredients (id_ingredient,id_recipe) VALUES('{0}','{1}')".format(ingredient.id,idRecipe)
+                cursor.execute(query)
+            db.commit()
+            return Response(message = '{0}'.format(idRecipe))
+        except BaseException as error:
+            print(f"Unexpected {error=}, {type(error)=}")
+            db.rollback()
+            return Response(message = "-1")
+    def AddReciepeToFavorites(self, request, context):
+        print("like")
+        print(request)
+        query = "INSERT INTO user_favorite_recipes (id_user, id_recipe) VALUES ('{0}', '{1}') RETURNING id;".format(request.idUser, request.idReciepe)
+        print(0.5)
+        try:
+            print(1)
+            cursor.execute(query)
+            print(2)
+            result = cursor.fetchone()
+            print(3)
+            idUser = result[0]
+            print(4)
+            print(idUser)
+            print(5)
+            db.commit()
+            print(6)
+            return Response(message = '{0}'.format(1))
+        except BaseException as error:
+            print("me mori")
+            print(f"Unexpected {error=}, {type(error)=}")
+            db.rollback()
+            return Response(message = "-1")
+    def RemoveReciepeToFavorites(self, request, context):
+        print("dislike")
+        print(request)
+        query = "DELETE FROM user_favorite_recipes WHERE id_user = '{0}' AND id_recipe = '{1}'".format(request.idUser, request.idReciepe)
+        try:
+            cursor.execute(query)
+            db.commit()
+            return Response(message = 1)
+        except BaseException as error:
+            print(f"Unexpected {error=}, {type(error)=}")
+            db.rollback()
+            return Response(message = "-1")
     def GetAllFavoritesReciepes(self, request, context):
         print("request")
         print(request)
@@ -92,7 +152,7 @@ class ServiceChefEnCasa(ChefEnCasaServicer):
 
 
 
-                recipe = Reciepe(idReciepe = row[0], title=row[1], description=row[2], photos=photos, ingredients=ingredients, category=category, prepatarionTimeMinutes=row[3], idUser=row[4])
+                recipe = Reciepe(idReciepe = row[0], title=row[1], description=row[2], photos=photos, ingredients=ingredients, category=category, prepatarionTimeMinutes=row[3], user=user)
                 allRecipes.append(recipe)
             return ResponseRecipes(recipes = allRecipes)
 
@@ -178,7 +238,7 @@ class ServiceChefEnCasa(ChefEnCasaServicer):
 
                 query_user = """
                     SELECT u.id, u.name, u.last_name, u.username FROM users as u WHERE u.id = {0}
-                    """.format(row[0])
+                    """.format(row[4])
                 cursor.execute(query_user)
                 result_user = cursor.fetchone()
                 user_recipe = User(id = result_user[0], name = result_user[1], userName = result_user[2])
