@@ -59,6 +59,11 @@ class ChefEnCasaStub(object):
                 request_serializer=servicio__pb2.Empty.SerializeToString,
                 response_deserializer=servicio__pb2.ResponseCategorys.FromString,
                 )
+        self.GetRecipeById = channel.unary_unary(
+                '/ChefEnCasa.ChefEnCasa/GetRecipeById',
+                request_serializer=servicio__pb2.RequestById.SerializeToString,
+                response_deserializer=servicio__pb2.ResponseRecipe.FromString,
+                )
         self.RegisterUser = channel.unary_unary(
                 '/ChefEnCasa.ChefEnCasa/RegisterUser',
                 request_serializer=servicio__pb2.RequestRegisterUser.SerializeToString,
@@ -148,6 +153,12 @@ class ChefEnCasaServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def GetRecipeById(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def RegisterUser(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -231,6 +242,11 @@ def add_ChefEnCasaServicer_to_server(servicer, server):
                     servicer.GetAllCategorys,
                     request_deserializer=servicio__pb2.Empty.FromString,
                     response_serializer=servicio__pb2.ResponseCategorys.SerializeToString,
+            ),
+            'GetRecipeById': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetRecipeById,
+                    request_deserializer=servicio__pb2.RequestById.FromString,
+                    response_serializer=servicio__pb2.ResponseRecipe.SerializeToString,
             ),
             'RegisterUser': grpc.unary_unary_rpc_method_handler(
                     servicer.RegisterUser,
@@ -422,6 +438,23 @@ class ChefEnCasa(object):
         return grpc.experimental.unary_unary(request, target, '/ChefEnCasa.ChefEnCasa/GetAllCategorys',
             servicio__pb2.Empty.SerializeToString,
             servicio__pb2.ResponseCategorys.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetRecipeById(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/ChefEnCasa.ChefEnCasa/GetRecipeById',
+            servicio__pb2.RequestById.SerializeToString,
+            servicio__pb2.ResponseRecipe.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
