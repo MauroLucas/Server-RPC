@@ -89,6 +89,11 @@ class ChefEnCasaStub(object):
                 request_serializer=servicio__pb2.RequestFollowUser.SerializeToString,
                 response_deserializer=servicio__pb2.Response.FromString,
                 )
+        self.UnFollowUser = channel.unary_unary(
+                '/ChefEnCasa.ChefEnCasa/UnFollowUser',
+                request_serializer=servicio__pb2.RequestFollowUser.SerializeToString,
+                response_deserializer=servicio__pb2.Response.FromString,
+                )
         self.UpdateReciepe = channel.unary_unary(
                 '/ChefEnCasa.ChefEnCasa/UpdateReciepe',
                 request_serializer=servicio__pb2.RequestUpdateReciepe.SerializeToString,
@@ -189,6 +194,12 @@ class ChefEnCasaServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def UnFollowUser(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def UpdateReciepe(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -270,6 +281,11 @@ def add_ChefEnCasaServicer_to_server(servicer, server):
             ),
             'FollowUser': grpc.unary_unary_rpc_method_handler(
                     servicer.FollowUser,
+                    request_deserializer=servicio__pb2.RequestFollowUser.FromString,
+                    response_serializer=servicio__pb2.Response.SerializeToString,
+            ),
+            'UnFollowUser': grpc.unary_unary_rpc_method_handler(
+                    servicer.UnFollowUser,
                     request_deserializer=servicio__pb2.RequestFollowUser.FromString,
                     response_serializer=servicio__pb2.Response.SerializeToString,
             ),
@@ -538,6 +554,23 @@ class ChefEnCasa(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/ChefEnCasa.ChefEnCasa/FollowUser',
+            servicio__pb2.RequestFollowUser.SerializeToString,
+            servicio__pb2.Response.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def UnFollowUser(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/ChefEnCasa.ChefEnCasa/UnFollowUser',
             servicio__pb2.RequestFollowUser.SerializeToString,
             servicio__pb2.Response.FromString,
             options, channel_credentials,
