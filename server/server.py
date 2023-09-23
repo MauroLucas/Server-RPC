@@ -9,7 +9,7 @@ from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
 db = psycopg2.connect(
     user="postgres",
-    password="root",
+    password="1234",
     host="localhost",
     port='5432',
     database = "chefencasa"
@@ -19,6 +19,7 @@ cursor = db.cursor();
 
 class ServiceChefEnCasa(ChefEnCasaServicer):
     def CreateRecipe(self, request, context):
+        print("CreateRecipe")
         print(request)
         try:
             query = "INSERT INTO recipes (title, description, preparation_time_minutes, id_user, id_category) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}') RETURNING id;".format(request.title,request.description,request.prepatarionTimeMinutes,request.idUser,request.category.id)
@@ -69,7 +70,7 @@ class ServiceChefEnCasa(ChefEnCasaServicer):
     def RemoveReciepeToFavorites(self, request, context):
         print("dislike")
         print(request)
-        query = "DELETE FROM user_favorite_recipes WHERE id_user = '{0}' AND id_recipe = '{1}'".format(request.idUser, request.idReciepe)
+        query = "DELETE FROM user_favorite_recipes WHERE id_user = {0} AND id_recipe = {1}".format(request.idUser, request.idReciepe)
         try:
             cursor.execute(query)
             db.commit()
@@ -79,6 +80,7 @@ class ServiceChefEnCasa(ChefEnCasaServicer):
             db.rollback()
             return Response(message = "-1")
     def GetAllFavoritesReciepes(self, request, context):
+        print("--------------GetAllFavoritesReciepes-----------------")
         print("request")
         print(request)
 
@@ -93,6 +95,7 @@ class ServiceChefEnCasa(ChefEnCasaServicer):
             print(column_names)
             allRecipes = []
             for row in cursor.fetchall():
+                print("row")
                 print(row)
 
                 query_photos = """
@@ -131,12 +134,16 @@ class ServiceChefEnCasa(ChefEnCasaServicer):
                 category = Category(id = result_category[0], name = result_category[1])
 
                 print(2)
+                print("row[0]")
+                print(row)
 
                 query_user = """
                     SELECT u.id, u.name, u.last_name, u.username FROM users as u WHERE u.id = {0}
-                    """.format(row[0])
+                    """.format(row[4])
                 cursor.execute(query_user)
                 result_user = cursor.fetchone()
+                print("result_user")
+                print(result_user)
                 user = User(id = result_user[0], name = result_user[1], userName = result_user[2])
 
 
