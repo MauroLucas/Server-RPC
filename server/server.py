@@ -505,6 +505,49 @@ class ServiceChefEnCasa(ChefEnCasaServicer):
             print(f"Unexpected {error=}, {type(error)=}")
             return ResponseRecipe(recipe=None)
         
+    def FollowUser(self,request, context):
+        try:
+                
+            query = "SELECT id_user, id_chef_user FROM user_followers WHERE id_user = '{0}' AND id_chef_user = '{1}'".format(request.idUser,request.idChefUser)
+            cursor.execute(query)
+            row = cursor.fetchone()
+            
+            if row is not None:
+                return Response(message = "Follow already exists")
+            
+            query_follow = "INSERT INTO user_followers (id_user,id_chef_user) VALUES('{0}','{1}')".format(request.idUser,request.idChefUser)
+            cursor.execute(query_follow)
+            db.commit()
+            return Response(message = "Follow succesfully")
+                           
+             
+        except BaseException as error:
+
+            print(f"Unexpected {error=}, {type(error)=}")
+            db.rollback()
+            return Response(message = "Error")
+        
+    def UnFollowUser(self,request, context):
+        try:
+                
+            query = "SELECT id_user, id_chef_user FROM user_followers WHERE id_user = '{0}' AND id_chef_user = '{1}';".format(request.idUser,request.idChefUser)
+            cursor.execute(query)
+            row = cursor.fetchone()
+            
+            if row is None:
+                return Response(message = "There is no follow")
+            
+            query_follow = "DELETE FROM user_followers WHERE id_user = '{0}' AND id_chef_user = '{1}';".format(request.idUser,request.idChefUser)
+            cursor.execute(query_follow)
+            db.commit()
+            return Response(message = "UnFollow succesfully")
+                           
+             
+        except BaseException as error:
+
+            print(f"Unexpected {error=}, {type(error)=}")
+            db.rollback()
+            return Response(message = "Error")
           
         
 
