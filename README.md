@@ -18,3 +18,11 @@ El plazo de entrega del TP es hasta el 05/09, puede puede ser extendido una sema
 - `cd..`
 - `cd server`
 - `python server.py`
+
+## Instalacion Kafka con Docker
+- [Instalar Docker](https://www.docker.com/)
+- `docker --version` (comprobar que esta instalado)
+- `cd .\Server-RPC\docker-kafka` (Posicionar en la ruta donde esta el archivo de configuracion docker-compose.yml)
+- `docker-compose up -d` (Crea los contenedores de kafka y Zookeeper)
+- `docker ps` (Para comprobar si estan corriendo. Tambien se puede ver desde docker desktop. Recordar siempre encender los contenedores)
+

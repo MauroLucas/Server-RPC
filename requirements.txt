@@ -1,5 +1,7 @@
+confluent-kafka==2.2.0
 googleapis-common-protos==1.60.0
 grpcio==1.57.0
 grpcio-tools==1.57.0
+kafka-python==2.0.2
 protobuf==4.24.2
 psycopg2==2.9.7
