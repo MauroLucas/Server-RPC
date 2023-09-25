@@ -505,7 +505,58 @@ class ServiceChefEnCasa(ChefEnCasaServicer):
             print(f"Unexpected {error=}, {type(error)=}")
             return ResponseRecipe(recipe=None)
         
+    def GetAllRecipesByUser(self, request, context):
+        try:
+            print("-----------------GetAllRecipesByUser-----------------")
+            print(request)
+            recipe_id = request.id
+            query_recipe = "SELECT * FROM recipes as r WHERE r.id_user = '{0}'".format(recipe_id)
+            cursor.execute(query_recipe)
+            row = cursor.fetchone()
+            #print(row)
+            #if row is None:
+                
+             #   return ResponseRecipe(None)
+            print("row")
+            print(row)
+            
+            query_photos = "SELECT * FROM recipe_photos as rp WHERE rp.id_recipe = '{0}'".format(recipe_id)
+            cursor.execute(query_photos)
+            photos = [Photo(id=row_photo[0], url=row_photo[1]) for row_photo in cursor.fetchall()]
+            print(photos)
+            
+            query_ingredients = "SELECT i.id, i.name FROM recipe_ingredients as ri INNER JOIN ingredient as i ON ri.id_ingredient = i.id WHERE ri.id_recipe = '{0}'".format(recipe_id)
+            cursor.execute(query_ingredients)
+            ingredients = [Ingredient(id=row_ingredient[0], name=row_ingredient[1]) for row_ingredient in cursor.fetchall()]
+            print(ingredients)
+
+            query_steps = "SELECT id, description FROM recipe_steps WHERE id_recipe = '{0}'".format(recipe_id)
+            cursor.execute(query_steps)
+            stepts = [Stept(id=row_step[0], description=row_step[1]) for row_step in cursor.fetchall()]
+            
+            query_category = "SELECT c.id, c.name FROM category as c WHERE c.id = '{0}'".format(row[5])
+            cursor.execute(query_category)
+            result_category = cursor.fetchone()
+            category = Category(id=result_category[0], name=result_category[1])
+            print(category)            
+            
+            query_user = "SELECT u.id, u.name, u.last_name, u.username FROM users as u WHERE u.id = '{0}'".format(row[4])
+            cursor.execute(query_user)
+            result_user = cursor.fetchone()
+            user = User(id=result_user[0], name=result_user[1], userName=result_user[2])
+            
+            print(user)
+            
+            recipe = Reciepe(idReciepe=row[0], title=row[1], description=row[2], photos=photos, ingredients=ingredients, category=category,stepts = stepts, prepatarionTimeMinutes=row[3], user=user)
+            print(recipe)
+            return ResponseRecipe(recipe=recipe)
+        except BaseException as error:
+            print(f"Unexpected {error=}, {type(error)=}")
+            return ResponseRecipe(recipe=None)
+        
     def FollowUser(self,request, context):
+        print("---------------FollowUser-----------------")
+        print(request)
         try:
                 
             query = "SELECT id_user, id_chef_user FROM user_followers WHERE id_user = '{0}' AND id_chef_user = '{1}'".format(request.idUser,request.idChefUser)
@@ -528,15 +579,20 @@ class ServiceChefEnCasa(ChefEnCasaServicer):
             return Response(message = "Error")
         
     def UnFollowUser(self,request, context):
+        print("---------------UnFollowUser-----------------")
+        print(request)
         try:
-                
             query = "SELECT id_user, id_chef_user FROM user_followers WHERE id_user = '{0}' AND id_chef_user = '{1}';".format(request.idUser,request.idChefUser)
             cursor.execute(query)
             row = cursor.fetchone()
+
+            print("row")
+            print(row)
             
             if row is None:
                 return Response(message = "There is no follow")
             
+            print("paso")
             query_follow = "DELETE FROM user_followers WHERE id_user = '{0}' AND id_chef_user = '{1}';".format(request.idUser,request.idChefUser)
             cursor.execute(query_follow)
             db.commit()
