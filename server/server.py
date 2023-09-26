@@ -607,6 +607,25 @@ class ServiceChefEnCasa(ChefEnCasaServicer):
             query_follow = "INSERT INTO user_followers (id_user,id_chef_user) VALUES('{0}','{1}')".format(request.idUser,request.idChefUser)
             cursor.execute(query_follow)
             db.commit()
+
+            # Envía un mensaje al topic PopularidadUsuario
+            query = "SELECT u.id, u.name, u.last_name, u.username from users as u WHERE u.id = '{0}'".format(request.idChefUser)
+            cursor.execute(query)
+            result = cursor.fetchone()
+            
+            nombre_usuario = result[3]
+            mensaje_popularidad = f'Usuario: {nombre_usuario}, Puntaje: {1}'
+        
+            #Agregar la marca de tiempo como un encabezado
+            fecha_hora_actual = datetime.datetime.now()
+            headers = [('timestamp', str(fecha_hora_actual))]            
+
+            # Envia el mensaje al topic "Novedades" con los encabezados
+            producer.produce(topic='PopularidadUsuario', value=mensaje_popularidad, headers=headers)
+            
+            # Espera a que todos los mensajes se envíen 
+            producer.flush()   
+
             return Response(message = "Follow succesfully")
                            
              
@@ -634,6 +653,24 @@ class ServiceChefEnCasa(ChefEnCasaServicer):
             query_follow = "DELETE FROM user_followers WHERE id_user = '{0}' AND id_chef_user = '{1}';".format(request.idUser,request.idChefUser)
             cursor.execute(query_follow)
             db.commit()
+
+            # Envía un mensaje al topic PopularidadUsuario
+            query = "SELECT u.id, u.name, u.last_name, u.username from users as u WHERE u.id = '{0}'".format(request.idChefUser)
+            cursor.execute(query)
+            result = cursor.fetchone()
+            
+            nombre_usuario = result[3]
+            mensaje_popularidad = f'Usuario: {nombre_usuario}, Puntaje: {-1}'
+        
+            #Agregar la marca de tiempo como un encabezado
+            fecha_hora_actual = datetime.datetime.now()
+            headers = [('timestamp', str(fecha_hora_actual))]            
+
+            # Envia el mensaje al topic "Novedades" con los encabezados
+            producer.produce(topic='PopularidadUsuario', value=mensaje_popularidad, headers=headers)
+            
+            # Espera a que todos los mensajes se envíen 
+            producer.flush()   
             return Response(message = "UnFollow succesfully")
                            
              
