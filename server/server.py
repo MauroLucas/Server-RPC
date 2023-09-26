@@ -1,7 +1,9 @@
 from servicio_pb2_grpc import ChefEnCasaServicer, add_ChefEnCasaServicer_to_server
 from servicio_pb2 import ResponseUser, ResponseIngredients, Ingredient, Category , ResponseCategorys, ResponseRecipes, Reciepe,Photo, User, Response, ResponseRecipe, Stept
+from confluent_kafka import Producer
 
 import grpc
+import datetime
 from concurrent import futures
 
 import psycopg2
@@ -9,13 +11,22 @@ from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
 db = psycopg2.connect(
     user="postgres",
-    password="1234",
+    password="root",
     host="localhost",
     port='5432',
     database = "chefencasa"
 )
 
-cursor = db.cursor();
+cursor = db.cursor()
+
+# Configuración del productor
+producer_config = {
+    'bootstrap.servers': 'localhost:9092',  # Cambia esto a la dirección y el puerto de tu clúster Kafka
+    'client.id': 'python-producer'
+}
+
+#Crear un productor Kafka
+producer = Producer(producer_config)
 
 class ServiceChefEnCasa(ChefEnCasaServicer):
     def CreateRecipe(self, request, context):
@@ -39,6 +50,33 @@ class ServiceChefEnCasa(ChefEnCasaServicer):
                 query = "INSERT INTO recipe_ingredients (id_ingredient,id_recipe) VALUES('{0}','{1}')".format(ingredient.id,idRecipe)
                 cursor.execute(query)
             db.commit()
+            
+
+            #Agregar al topic Novedades
+            topic_name = 'Novedades'
+
+            #Datos receta
+            query = "SELECT u.id, u.name, u.last_name, u.username from users as u WHERE u.id = '{0}'".format(request.idUser)
+            cursor.execute(query)
+            result = cursor.fetchone()
+            
+            nombre_usuario = result[3]
+            titulo_receta = "'{0}'".format(request.title)
+            url_foto = "'{0}'".format(request.photos[0].url)            
+
+            #Agregar la marca de tiempo como un encabezado
+            fecha_hora_actual = datetime.datetime.now()
+            headers = [('timestamp', str(fecha_hora_actual))]            
+
+            # Formatea los datos en un mensaje
+            mensaje_receta = f'Usuario: {nombre_usuario}, Título: {titulo_receta}, URL Foto: {url_foto}'
+
+            # Envia el mensaje al topic "Novedades" con los encabezados
+            producer.produce(topic=topic_name, value=mensaje_receta, headers=headers)
+            
+            # Espera a que todos los mensajes se envíen 
+            producer.flush()                          
+
             return Response(message = '{0}'.format(idRecipe))
         except BaseException as error:
             print(f"Unexpected {error=}, {type(error)=}")
