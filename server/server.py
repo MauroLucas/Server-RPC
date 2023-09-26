@@ -21,7 +21,7 @@ cursor = db.cursor()
 
 # Configuración del productor
 producer_config = {
-    'bootstrap.servers': 'localhost:9092',  # Cambia esto a la dirección y el puerto de tu clúster Kafka
+    'bootstrap.servers': 'localhost:9092',  
     'client.id': 'python-producer'
 }
 

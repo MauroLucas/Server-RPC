@@ -2,7 +2,7 @@ from confluent_kafka.admin import AdminClient, NewTopic
 
 # Configura la conexión con el clúster Kafka
 conf = {
-    'bootstrap.servers': 'localhost:9092',  # Cambia a la dirección de tu clúster si es diferente
+    'bootstrap.servers': 'localhost:9092',  
 }
 
 # Crea un cliente de administración Kafka

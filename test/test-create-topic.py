@@ -5,9 +5,9 @@ from kafka.admin import NewTopic
 admin_client = KafkaAdminClient(bootstrap_servers='localhost:9092')
 
 # Define el nombre del nuevo topic que deseas crear
-topic_name = 'mi-tema'  # Reemplaza 'mi-tema' con el nombre que desees
+topic_name = 'mi-tema'  
 
-# Define las configuraciones para el nuevo topic (puedes ajustar estas configuraciones según tus necesidades)
+# Define las configuraciones para el nuevo topic 
 new_topic = NewTopic(
     name=topic_name,
     num_partitions=1,  # Número de particiones
