@@ -6,7 +6,7 @@ admin_config = {
 }
 
 # Nombres de los topics que deseas verificar y crear
-topics_to_create = ['Novedades', 'PopularidadUsuario']
+topics_to_create = ['Novedades', 'PopularidadUsuario', 'Comentarios']  
 
 # Crea un cliente de administración de Kafka
 admin_client = AdminClient(admin_config)
