@@ -25,4 +25,7 @@ El plazo de entrega del TP es hasta el 05/09, puede puede ser extendido una sema
 - `cd .\Server-RPC\docker-kafka` (Posicionar en la ruta donde esta el archivo de configuracion docker-compose.yml)
 - `docker-compose up -d` (Crea los contenedores de kafka y Zookeeper)
 - `docker ps` (Para comprobar si estan corriendo. Tambien se puede ver desde docker desktop. Recordar siempre encender los contenedores)
+- `cd .\Server-RPC\kafka`
+- `python kafka.py` (Para crear los topics)
+
 
