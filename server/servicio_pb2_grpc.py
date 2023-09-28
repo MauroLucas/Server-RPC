@@ -99,6 +99,16 @@ class ChefEnCasaStub(object):
                 request_serializer=servicio__pb2.RequestUpdateReciepe.SerializeToString,
                 response_deserializer=servicio__pb2.Response.FromString,
                 )
+        self.CommentRecipe = channel.unary_unary(
+                '/ChefEnCasa.ChefEnCasa/CommentRecipe',
+                request_serializer=servicio__pb2.RequestComment.SerializeToString,
+                response_deserializer=servicio__pb2.Response.FromString,
+                )
+        self.RateRecipe = channel.unary_unary(
+                '/ChefEnCasa.ChefEnCasa/RateRecipe',
+                request_serializer=servicio__pb2.RequestRateRecipe.SerializeToString,
+                response_deserializer=servicio__pb2.Response.FromString,
+                )
 
 
 class ChefEnCasaServicer(object):
@@ -206,6 +216,18 @@ class ChefEnCasaServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def CommentRecipe(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def RateRecipe(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_ChefEnCasaServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -292,6 +314,16 @@ def add_ChefEnCasaServicer_to_server(servicer, server):
             'UpdateReciepe': grpc.unary_unary_rpc_method_handler(
                     servicer.UpdateReciepe,
                     request_deserializer=servicio__pb2.RequestUpdateReciepe.FromString,
+                    response_serializer=servicio__pb2.Response.SerializeToString,
+            ),
+            'CommentRecipe': grpc.unary_unary_rpc_method_handler(
+                    servicer.CommentRecipe,
+                    request_deserializer=servicio__pb2.RequestComment.FromString,
+                    response_serializer=servicio__pb2.Response.SerializeToString,
+            ),
+            'RateRecipe': grpc.unary_unary_rpc_method_handler(
+                    servicer.RateRecipe,
+                    request_deserializer=servicio__pb2.RequestRateRecipe.FromString,
                     response_serializer=servicio__pb2.Response.SerializeToString,
             ),
     }
@@ -589,6 +621,40 @@ class ChefEnCasa(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/ChefEnCasa.ChefEnCasa/UpdateReciepe',
             servicio__pb2.RequestUpdateReciepe.SerializeToString,
+            servicio__pb2.Response.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def CommentRecipe(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/ChefEnCasa.ChefEnCasa/CommentRecipe',
+            servicio__pb2.RequestComment.SerializeToString,
+            servicio__pb2.Response.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def RateRecipe(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/ChefEnCasa.ChefEnCasa/RateRecipe',
+            servicio__pb2.RequestRateRecipe.SerializeToString,
             servicio__pb2.Response.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

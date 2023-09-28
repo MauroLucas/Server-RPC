@@ -686,10 +686,83 @@ class ServiceChefEnCasa(ChefEnCasaServicer):
             print(f"Unexpected {error=}, {type(error)=}")
             db.rollback()
             return Response(message = "Error")
-          
         
+    def CommentRecipe(self,request, context):
+        try:
+            idUser = request.idUser
+            idRecipe = request.idReciepe
+            comment = request.comment
+
+            # Envía un mensaje al topic Comentarios
+            query = "SELECT u.id, u.name, u.last_name, u.username from users as u WHERE u.id = '{0}'".format(request.idUser)
+            cursor.execute(query)
+            result = cursor.fetchone()            
+            nombre_usuario = result[3]
+
+            query = "SELECT r.title from recipes as r WHERE r.id = '{0}'".format(request.idReciepe)
+            cursor.execute(query)
+            result = cursor.fetchone() 
+            titulo_receta = result[0]
+
+            mensaje_comentario = f'usuarioComentario: {nombre_usuario}, recetaComentada: {titulo_receta} , comentario: {comment}'
+            
+            print(mensaje_comentario)
+            #Agregar la marca de tiempo como un encabezado
+            fecha_hora_actual = datetime.datetime.now()
+            headers = [('timestamp', str(fecha_hora_actual))]            
+
+            # Envia el mensaje al topic "Comentarios" con los encabezados
+            producer.produce(topic='Comentarios', value=mensaje_comentario, headers=headers)
+            
+            # Espera a que todos los mensajes se envíen 
+            producer.flush()   
+
+            mensaje_popularidad = f'IdReceta: {idRecipe}, Puntaje: {1}'
+        
+            #Agregar la marca de tiempo como un encabezado
+            fecha_hora_actual = datetime.datetime.now()
+            headers = [('timestamp', str(fecha_hora_actual))]            
+
+            # Envia el mensaje al topic "PopularidadReceta" con los encabezados
+            producer.produce(topic='PopularidadReceta', value=mensaje_popularidad, headers=headers)
+            
+            # Espera a que todos los mensajes se envíen 
+            producer.flush()   
+
+            return Response(message = "Comment succesfully")       
 
         
+        except BaseException as error:
+
+            print(f"Unexpected {error=}, {type(error)=}") 
+            return Response(message = "Error")   
+        
+    def RateRecipe(self,request, context):
+        try:
+            
+            idRecipe = request.idReciepe
+            score = request.score
+
+            
+            mensaje_popularidad = f'IdReceta: {idRecipe}, Puntaje: {score}'
+        
+            #Agregar la marca de tiempo como un encabezado
+            fecha_hora_actual = datetime.datetime.now()
+            headers = [('timestamp', str(fecha_hora_actual))]            
+
+            # Envia el mensaje al topic "PopularidadReceta" con los encabezados
+            producer.produce(topic='PopularidadReceta', value=mensaje_popularidad, headers=headers)
+            
+            # Espera a que todos los mensajes se envíen 
+            producer.flush()   
+
+            return Response(message = "Qualify succesfully")       
+
+        
+        except BaseException as error:
+
+            print(f"Unexpected {error=}, {type(error)=}") 
+            return Response(message = "Error")  
 
 def start():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
