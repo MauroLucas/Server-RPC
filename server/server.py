@@ -1,7 +1,9 @@
 from servicio_pb2_grpc import ChefEnCasaServicer, add_ChefEnCasaServicer_to_server
 from servicio_pb2 import ResponseUser, ResponseIngredients, Ingredient, Category , ResponseCategorys, ResponseRecipes, Reciepe,Photo, User, Response, ResponseRecipe, Stept
+from confluent_kafka import Producer
 
 import grpc
+import datetime
 from concurrent import futures
 
 import psycopg2
@@ -9,13 +11,22 @@ from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
 db = psycopg2.connect(
     user="postgres",
-    password="1234",
+    password="root",
     host="localhost",
     port='5432',
     database = "chefencasa"
 )
 
-cursor = db.cursor();
+cursor = db.cursor()
+
+# Configuración del productor
+producer_config = {
+    'bootstrap.servers': 'localhost:9092',  
+    'client.id': 'python-producer'
+}
+
+#Crear un productor Kafka
+producer = Producer(producer_config)
 
 class ServiceChefEnCasa(ChefEnCasaServicer):
     def CreateRecipe(self, request, context):
@@ -39,6 +50,33 @@ class ServiceChefEnCasa(ChefEnCasaServicer):
                 query = "INSERT INTO recipe_ingredients (id_ingredient,id_recipe) VALUES('{0}','{1}')".format(ingredient.id,idRecipe)
                 cursor.execute(query)
             db.commit()
+            
+
+            #Agregar al topic Novedades
+            topic_name = 'Novedades'
+
+            #Datos receta
+            query = "SELECT u.id, u.name, u.last_name, u.username from users as u WHERE u.id = '{0}'".format(request.idUser)
+            cursor.execute(query)
+            result = cursor.fetchone()
+            
+            nombre_usuario = result[3]
+            titulo_receta = "'{0}'".format(request.title)
+            url_foto = "'{0}'".format(request.photos[0].url)            
+
+            #Agregar la marca de tiempo como un encabezado
+            fecha_hora_actual = datetime.datetime.now()
+            headers = [('timestamp', str(fecha_hora_actual))]            
+
+            # Formatea los datos en un mensaje
+            mensaje_receta = f'Usuario: {nombre_usuario}, Título: {titulo_receta}, URL Foto: {url_foto}'
+
+            # Envia el mensaje al topic "Novedades" con los encabezados
+            producer.produce(topic=topic_name, value=mensaje_receta, headers=headers)
+            
+            # Espera a que todos los mensajes se envíen 
+            producer.flush()                          
+
             return Response(message = '{0}'.format(idRecipe))
         except BaseException as error:
             print(f"Unexpected {error=}, {type(error)=}")
@@ -576,6 +614,25 @@ class ServiceChefEnCasa(ChefEnCasaServicer):
             query_follow = "INSERT INTO user_followers (id_user,id_chef_user) VALUES('{0}','{1}')".format(request.idUser,request.idChefUser)
             cursor.execute(query_follow)
             db.commit()
+
+            # Envía un mensaje al topic PopularidadUsuario
+            query = "SELECT u.id, u.name, u.last_name, u.username from users as u WHERE u.id = '{0}'".format(request.idChefUser)
+            cursor.execute(query)
+            result = cursor.fetchone()
+            
+            nombre_usuario = result[3]
+            mensaje_popularidad = f'Usuario: {nombre_usuario}, Puntaje: {1}'
+        
+            #Agregar la marca de tiempo como un encabezado
+            fecha_hora_actual = datetime.datetime.now()
+            headers = [('timestamp', str(fecha_hora_actual))]            
+
+            # Envia el mensaje al topic "Novedades" con los encabezados
+            producer.produce(topic='PopularidadUsuario', value=mensaje_popularidad, headers=headers)
+            
+            # Espera a que todos los mensajes se envíen 
+            producer.flush()   
+
             return Response(message = "Follow succesfully")
                            
              
@@ -603,6 +660,24 @@ class ServiceChefEnCasa(ChefEnCasaServicer):
             query_follow = "DELETE FROM user_followers WHERE id_user = '{0}' AND id_chef_user = '{1}';".format(request.idUser,request.idChefUser)
             cursor.execute(query_follow)
             db.commit()
+
+            # Envía un mensaje al topic PopularidadUsuario
+            query = "SELECT u.id, u.name, u.last_name, u.username from users as u WHERE u.id = '{0}'".format(request.idChefUser)
+            cursor.execute(query)
+            result = cursor.fetchone()
+            
+            nombre_usuario = result[3]
+            mensaje_popularidad = f'Usuario: {nombre_usuario}, Puntaje: {-1}'
+        
+            #Agregar la marca de tiempo como un encabezado
+            fecha_hora_actual = datetime.datetime.now()
+            headers = [('timestamp', str(fecha_hora_actual))]            
+
+            # Envia el mensaje al topic "Novedades" con los encabezados
+            producer.produce(topic='PopularidadUsuario', value=mensaje_popularidad, headers=headers)
+            
+            # Espera a que todos los mensajes se envíen 
+            producer.flush()   
             return Response(message = "UnFollow succesfully")
                            
              
