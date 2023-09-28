@@ -182,7 +182,7 @@ class ServiceChefEnCasa(ChefEnCasaServicer):
             print("catId")
             print(request.category.id)
 
-            if (request.category.id == 0):
+            if (request.category.id == -1):
                 query_recipes = """
                     SELECT * FROM recipes as r where lower(title) like '%{0}%' and r.preparation_time_minutes <= {1}
                 """.format(request.title.lower(), request.prepatarionTimeMinutesMax)
@@ -190,7 +190,11 @@ class ServiceChefEnCasa(ChefEnCasaServicer):
                     query_recipes = """
                         SELECT * FROM recipes as r where r.preparation_time_minutes <= {0}
                     """.format(request.prepatarionTimeMinutesMax)
-            if (request.title == "." and request.category.id != 0):
+                    if (request.category.id != -1):
+                        query_recipes = """
+                            SELECT * FROM recipes as r where r.preparation_time_minutes <= {0}
+                        """.format(request.prepatarionTimeMinutesMax)
+            if (request.title == "." and request.category.id != -1):
                 query_recipes = """
                     SELECT * FROM recipes as r where r.id_category = {0}
                 """.format(request.category.id)
@@ -425,6 +429,9 @@ class ServiceChefEnCasa(ChefEnCasaServicer):
             db.rollback()
             return Response(message = "-1")
     def UpdateReciepe(self, request, context):
+        print("-----------------UpdateReciepe-----------------")
+        print(request)
+        
         try:
             query = 1
             query = "UPDATE recipes set title = '{0}', description = '{1}', preparation_time_minutes = '{2}', id_category = '{3}' WHERE id = '{4}';".format(request.title,request.description,request.prepatarionTimeMinutes,request.category.id,request.idReciepe)
