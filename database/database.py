@@ -35,16 +35,15 @@ cursor = db.cursor();
 
 cursor.execute("CREATE TABLE IF NOT EXISTS category (id SERIAL PRIMARY KEY, name VARCHAR(255) NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);")
 cursor.execute("CREATE TABLE IF NOT EXISTS ingredient (id SERIAL PRIMARY KEY, name VARCHAR(255) NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);")
-cursor.execute("CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, name VARCHAR(255) NOT NULL, last_name VARCHAR(255) NOT NULL, email VARCHAR(255) UNIQUE NOT NULL, username VARCHAR(50) UNIQUE NOT NULL, password VARCHAR(255) NOT NULL, score FLOAT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);")
+cursor.execute("CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, name VARCHAR(255) NOT NULL, last_name VARCHAR(255) NOT NULL, email VARCHAR(255) UNIQUE NOT NULL, username VARCHAR(50) UNIQUE NOT NULL, password VARCHAR(255) NOT NULL, popularity INT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);")
 cursor.execute("CREATE TABLE IF NOT EXISTS user_followers (id SERIAL PRIMARY KEY, id_user INT NOT NULL, id_chef_user INT NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (id_user) REFERENCES users(id), FOREIGN KEY (id_chef_user) REFERENCES users(id));")
-cursor.execute("CREATE TABLE IF NOT EXISTS recipes (id SERIAL PRIMARY KEY, title VARCHAR(255) NOT NULL, description TEXT, preparation_time_minutes INT, id_user INT NOT NULL, id_category INT,score FLOAT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (id_user) REFERENCES users(id), FOREIGN KEY (id_category) REFERENCES category(id));")
+cursor.execute("CREATE TABLE IF NOT EXISTS recipes (id SERIAL PRIMARY KEY, title VARCHAR(255) NOT NULL, description TEXT, preparation_time_minutes INT, id_user INT NOT NULL, id_category INT,average_ranking FLOAT, popularity INT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (id_user) REFERENCES users(id), FOREIGN KEY (id_category) REFERENCES category(id));")
 cursor.execute("CREATE TABLE IF NOT EXISTS recipe_photos (id SERIAL PRIMARY KEY, url VARCHAR(255) NOT NULL, id_recipe INT NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (id_recipe) REFERENCES recipes(id));")
 cursor.execute("CREATE TABLE IF NOT EXISTS recipe_ingredients (id SERIAL PRIMARY KEY, id_ingredient INT NOT NULL, id_recipe INT NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (id_ingredient) REFERENCES ingredient(id), FOREIGN KEY (id_recipe) REFERENCES recipes(id));")
 cursor.execute("CREATE TABLE IF NOT EXISTS recipe_steps (id SERIAL PRIMARY KEY, description TEXT NOT NULL, id_recipe INT NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (id_recipe) REFERENCES recipes(id));")
 cursor.execute("CREATE TABLE IF NOT EXISTS user_favorite_recipes (id SERIAL PRIMARY KEY, id_user INT NOT NULL, id_recipe INT NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (id_user) REFERENCES users(id), FOREIGN KEY (id_recipe) REFERENCES recipes(id));")
 cursor.execute("CREATE TABLE IF NOT EXISTS recipe_comments (id SERIAL PRIMARY KEY, id_user INT NOT NULL, id_recipe INT NOT NULL, comment TEXT NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (id_user) REFERENCES users(id), FOREIGN KEY (id_recipe) REFERENCES recipes(id));")
-#cursor.execute("CREATE TABLE IF NOT EXISTS recipe_score (id SERIAL PRIMARY KEY,id_recipe INT NOT NULL UNIQUE,score INT NOT NULL,FOREIGN KEY (id_recipe) REFERENCES recipes(id));")
-#cursor.execute("CREATE TABLE IF NOT EXISTS user_score (id SERIAL PRIMARY KEY,id_user INT NOT NULL UNIQUE,score INT NOT NULL,FOREIGN KEY (id_user) REFERENCES users(id));")
+cursor.execute("CREATE TABLE IF NOT EXISTS recipe_classifications (id SERIAL PRIMARY KEY,id_recipe INT NOT NULL,id_user INT NOT NULL,clasificacion INT NOT NULL CHECK (clasificacion >= 1 AND clasificacion <= 5),FOREIGN KEY (id_recipe) REFERENCES recipes(id),FOREIGN KEY (id_user) REFERENCES users(id));")
 
 print("The chefencasa database schema was created succesfully.")
 
@@ -65,6 +64,10 @@ cursor.execute("INSERT INTO recipe_ingredients (id_ingredient, id_recipe) VALUES
 cursor.execute("INSERT INTO user_favorite_recipes (id_user, id_recipe) VALUES (1, 1), (1, 3);")
 cursor.execute("INSERT INTO user_favorite_recipes (id_user, id_recipe) VALUES (2, 2);")
 cursor.execute("INSERT INTO recipe_comments (id_user, id_recipe, comment) VALUES (1, 1, 'Muy buena la receta');")
+cursor.execute("INSERT INTO recipe_classifications (id_recipe,id_user, clasificacion) VALUES (1,1, 1);")
+cursor.execute("INSERT INTO recipe_classifications (id_recipe,id_user, clasificacion) VALUES (1,2, 2);")
+cursor.execute("INSERT INTO recipe_classifications (id_recipe,id_user, clasificacion) VALUES (1,3, 3);")
+
 
 
 

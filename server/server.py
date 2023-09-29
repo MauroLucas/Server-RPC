@@ -741,10 +741,25 @@ class ServiceChefEnCasa(ChefEnCasaServicer):
         try:
             
             idRecipe = request.idReciepe
-            score = request.score
-
+            idUser = request.idUser
+            clasification = request.clasification
             
-            mensaje_popularidad = f'IdReceta: {idRecipe}, Puntaje: {score}'
+            #Insert a la base
+            query_clasification = "INSERT INTO recipe_classifications (id_recipe, id_user, clasificacion) VALUES('{0}','{1}','{2}')".format(idRecipe,idUser,clasification)
+            cursor.execute(query_clasification)
+            db.commit()
+
+            query_average_ranking = "SELECT ROUND(AVG(clasificacion), 1) AS clasificacion_promedio FROM recipe_classifications WHERE id_recipe = '{0}'".format(idRecipe)
+            cursor.execute(query_average_ranking)
+            result = cursor.fetchone() 
+            average_ranking = result[0]
+
+            query_update_rating = "UPDATE recipes set average_ranking = '{0}' WHERE id = '{1}'".format(average_ranking,idRecipe)
+            cursor.execute(query_update_rating)
+            db.commit()
+            
+            #Mesanje para el topic "PopularidadReceta"
+            mensaje_popularidad = f'IdReceta: {idRecipe}, Puntaje: {clasification}'
         
             #Agregar la marca de tiempo como un encabezado
             fecha_hora_actual = datetime.datetime.now()
@@ -760,8 +775,8 @@ class ServiceChefEnCasa(ChefEnCasaServicer):
 
         
         except BaseException as error:
-
             print(f"Unexpected {error=}, {type(error)=}") 
+            db.rollback()
             return Response(message = "Error")  
 
 def start():
