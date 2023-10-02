@@ -64,6 +64,26 @@ class ChefEnCasaStub(object):
                 request_serializer=servicio__pb2.RequestById.SerializeToString,
                 response_deserializer=servicio__pb2.ResponseRecipe.FromString,
                 )
+        self.GetAllCommentsByRecipe = channel.unary_unary(
+                '/ChefEnCasa.ChefEnCasa/GetAllCommentsByRecipe',
+                request_serializer=servicio__pb2.RequestById.SerializeToString,
+                response_deserializer=servicio__pb2.ResponseComments.FromString,
+                )
+        self.GetTop10Users = channel.unary_unary(
+                '/ChefEnCasa.ChefEnCasa/GetTop10Users',
+                request_serializer=servicio__pb2.Empty.SerializeToString,
+                response_deserializer=servicio__pb2.ResponseUsers.FromString,
+                )
+        self.GetTop10Recipes = channel.unary_unary(
+                '/ChefEnCasa.ChefEnCasa/GetTop10Recipes',
+                request_serializer=servicio__pb2.Empty.SerializeToString,
+                response_deserializer=servicio__pb2.ResponseRecipes.FromString,
+                )
+        self.GetNovedades = channel.unary_unary(
+                '/ChefEnCasa.ChefEnCasa/GetNovedades',
+                request_serializer=servicio__pb2.Empty.SerializeToString,
+                response_deserializer=servicio__pb2.ResponseNovedades.FromString,
+                )
         self.RegisterUser = channel.unary_unary(
                 '/ChefEnCasa.ChefEnCasa/RegisterUser',
                 request_serializer=servicio__pb2.RequestRegisterUser.SerializeToString,
@@ -169,6 +189,30 @@ class ChefEnCasaServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def GetRecipeById(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetAllCommentsByRecipe(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetTop10Users(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetTop10Recipes(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetNovedades(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -280,6 +324,26 @@ def add_ChefEnCasaServicer_to_server(servicer, server):
                     servicer.GetRecipeById,
                     request_deserializer=servicio__pb2.RequestById.FromString,
                     response_serializer=servicio__pb2.ResponseRecipe.SerializeToString,
+            ),
+            'GetAllCommentsByRecipe': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetAllCommentsByRecipe,
+                    request_deserializer=servicio__pb2.RequestById.FromString,
+                    response_serializer=servicio__pb2.ResponseComments.SerializeToString,
+            ),
+            'GetTop10Users': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetTop10Users,
+                    request_deserializer=servicio__pb2.Empty.FromString,
+                    response_serializer=servicio__pb2.ResponseUsers.SerializeToString,
+            ),
+            'GetTop10Recipes': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetTop10Recipes,
+                    request_deserializer=servicio__pb2.Empty.FromString,
+                    response_serializer=servicio__pb2.ResponseRecipes.SerializeToString,
+            ),
+            'GetNovedades': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetNovedades,
+                    request_deserializer=servicio__pb2.Empty.FromString,
+                    response_serializer=servicio__pb2.ResponseNovedades.SerializeToString,
             ),
             'RegisterUser': grpc.unary_unary_rpc_method_handler(
                     servicer.RegisterUser,
@@ -503,6 +567,74 @@ class ChefEnCasa(object):
         return grpc.experimental.unary_unary(request, target, '/ChefEnCasa.ChefEnCasa/GetRecipeById',
             servicio__pb2.RequestById.SerializeToString,
             servicio__pb2.ResponseRecipe.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetAllCommentsByRecipe(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/ChefEnCasa.ChefEnCasa/GetAllCommentsByRecipe',
+            servicio__pb2.RequestById.SerializeToString,
+            servicio__pb2.ResponseComments.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetTop10Users(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/ChefEnCasa.ChefEnCasa/GetTop10Users',
+            servicio__pb2.Empty.SerializeToString,
+            servicio__pb2.ResponseUsers.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetTop10Recipes(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/ChefEnCasa.ChefEnCasa/GetTop10Recipes',
+            servicio__pb2.Empty.SerializeToString,
+            servicio__pb2.ResponseRecipes.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetNovedades(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/ChefEnCasa.ChefEnCasa/GetNovedades',
+            servicio__pb2.Empty.SerializeToString,
+            servicio__pb2.ResponseNovedades.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 

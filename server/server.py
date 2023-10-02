@@ -1,9 +1,10 @@
 from servicio_pb2_grpc import ChefEnCasaServicer, add_ChefEnCasaServicer_to_server
-from servicio_pb2 import ResponseUser, ResponseIngredients, Ingredient, Category , ResponseCategorys, ResponseRecipes, Reciepe,Photo, User, Response, ResponseRecipe, Stept
-from confluent_kafka import Producer
-
+from servicio_pb2 import ResponseUser, ResponseIngredients, Ingredient, Category , ResponseCategorys, ResponseRecipes, Reciepe,Photo, User, Response, ResponseRecipe, Stept, ResponseComments, Comment, ResponseUsers, ResponseNovedades, Novedad
+from confluent_kafka import Producer,Consumer,KafkaError
+import time
 import grpc
 import datetime
+import json
 from concurrent import futures
 
 import psycopg2
@@ -68,14 +69,20 @@ class ServiceChefEnCasa(ChefEnCasaServicer):
             fecha_hora_actual = datetime.datetime.now()
             headers = [('timestamp', str(fecha_hora_actual))]            
 
-            # Formatea los datos en un mensaje
-            mensaje_receta = f'Usuario: {nombre_usuario}, Título: {titulo_receta}, URL Foto: {url_foto}'
+            mensaje_receta_data = {
+                'Usuario': nombre_usuario,
+                'title': request.title,
+                'URL Foto': request.photos[0].url
+            }
 
-            # Envia el mensaje al topic "Novedades" con los encabezados
-            producer.produce(topic=topic_name, value=mensaje_receta, headers=headers)
-            
-            # Espera a que todos los mensajes se envíen 
-            producer.flush()                          
+            # Convertir el diccionario a una cadena JSON
+            mensaje_receta_json = json.dumps(mensaje_receta_data)
+
+            # Enviar el mensaje al topic "Novedades" con los encabezados
+            producer.produce(topic=topic_name, value=mensaje_receta_json, headers=headers)
+
+            # Espera a que todos los mensajes se envíen
+            producer.flush()                         
 
             return Response(message = '{0}'.format(idRecipe))
         except BaseException as error:
@@ -84,6 +91,7 @@ class ServiceChefEnCasa(ChefEnCasaServicer):
             return Response(message = "-1")
     def AddReciepeToFavorites(self, request, context):
         print("like")
+        print("-----------------AddRecipeToFavorites---------------")
         print(request)
         query = "INSERT INTO user_favorite_recipes (id_user, id_recipe) VALUES ('{0}', '{1}') RETURNING id;".format(request.idUser, request.idReciepe)
         print(0.5)
@@ -99,6 +107,53 @@ class ServiceChefEnCasa(ChefEnCasaServicer):
             print(5)
             db.commit()
             print(6)
+            
+            #Mesanje para el topic "PopularidadReceta"
+            puntaje = 1
+            mensaje_popularidad = {
+                'IdReceta': request.idReciepe,
+                'Puntaje': puntaje
+            }
+
+            # Convertir el diccionario a una cadena JSON
+            mensaje_popularidad_json = json.dumps(mensaje_popularidad)
+        
+            #Agregar la marca de tiempo como un encabezado
+            fecha_hora_actual = datetime.datetime.now()
+            headers = [('timestamp', str(fecha_hora_actual))]            
+
+            # Envia el mensaje al topic "PopularidadReceta" con los encabezados
+            producer.produce(topic='PopularidadReceta', value=mensaje_popularidad_json, headers=headers)
+
+            producer.flush() 
+            print("Guardado en el topic de PopularidadReceta")  
+
+
+            # Envía un mensaje al topic PopularidadUsuario
+            query = "SELECT u.id, u.name, u.last_name, u.username from users as u WHERE u.id = '{0}'".format(request.idUser)
+            cursor.execute(query)
+            result = cursor.fetchone()
+            
+            nombre_usuario = result[3]
+            
+            puntaje = 1
+            mensaje_popularidad = {
+                'nombreUsuario': nombre_usuario,
+                'Puntaje': puntaje
+            }
+
+            # Convertir el diccionario a una cadena JSON
+            mensaje_popularidad_json = json.dumps(mensaje_popularidad)
+        
+            #Agregar la marca de tiempo como un encabezado
+            fecha_hora_actual = datetime.datetime.now()
+            headers = [('timestamp', str(fecha_hora_actual))]            
+
+            # Envia el mensaje al topic "PopularidadUsuario" con los encabezados
+            producer.produce(topic='PopularidadUsuario', value=mensaje_popularidad_json, headers=headers)
+
+            producer.flush()   
+
             return Response(message = '{0}'.format(1))
         except BaseException as error:
             print("me mori")
@@ -112,6 +167,50 @@ class ServiceChefEnCasa(ChefEnCasaServicer):
         try:
             cursor.execute(query)
             db.commit()
+            #Mesanje para el topic "PopularidadReceta"
+            puntaje = -1
+            mensaje_popularidad = {
+                'IdReceta': request.idReciepe,
+                'Puntaje': puntaje
+            }
+
+            # Convertir el diccionario a una cadena JSON
+            mensaje_popularidad_json = json.dumps(mensaje_popularidad)
+        
+            #Agregar la marca de tiempo como un encabezado
+            fecha_hora_actual = datetime.datetime.now()
+            headers = [('timestamp', str(fecha_hora_actual))]            
+
+            # Envia el mensaje al topic "PopularidadReceta" con los encabezados
+            producer.produce(topic='PopularidadReceta', value=mensaje_popularidad_json, headers=headers)
+
+            producer.flush()  
+
+            # Envía un mensaje al topic PopularidadUsuario
+            query = "SELECT u.id, u.name, u.last_name, u.username from users as u WHERE u.id = '{0}'".format(request.idUser)
+            cursor.execute(query)
+            result = cursor.fetchone()
+            
+            nombre_usuario = result[3]
+            
+            puntaje = -1
+            mensaje_popularidad = {
+                'nombreUsuario': nombre_usuario,
+                'Puntaje': puntaje
+            }
+
+            # Convertir el diccionario a una cadena JSON
+            mensaje_popularidad_json = json.dumps(mensaje_popularidad)
+        
+            #Agregar la marca de tiempo como un encabezado
+            fecha_hora_actual = datetime.datetime.now()
+            headers = [('timestamp', str(fecha_hora_actual))]            
+
+            # Envia el mensaje al topic "PopularidadUsuario" con los encabezados
+            producer.produce(topic='PopularidadUsuario', value=mensaje_popularidad_json, headers=headers)
+
+            producer.flush()   
+
             return Response(message = 1)
         except BaseException as error:
             print(f"Unexpected {error=}, {type(error)=}")
@@ -124,7 +223,7 @@ class ServiceChefEnCasa(ChefEnCasaServicer):
 
         try:
             query_recipes = """
-            SELECT * FROM recipes as r where r.id in (SELECT id_recipe FROM user_favorite_recipes as ufr WHERE ufr.id_user = {0})
+            SELECT id, title, description, preparation_time_minutes, id_user, id_category,  created_at, updated_at FROM recipes as r where r.id in (SELECT id_recipe FROM user_favorite_recipes as ufr WHERE ufr.id_user = {0})
         """.format(request.id)
             
             cursor.execute(query_recipes)
@@ -429,13 +528,13 @@ class ServiceChefEnCasa(ChefEnCasaServicer):
 
     def GetUserById(self, request, context):
         try:
-            query = "SELECT u.id, u.name, u.last_name, u.username from users as u WHERE u.id = '{0}'".format(request.id)
+            query = "SELECT u.id, u.name, u.last_name, u.username, u.popularity from users as u WHERE u.id = '{0}'".format(request.id)
             cursor.execute(query)
             result = cursor.fetchone()
             if(result is None):
                 return ResponseUser(id=-1)                  
             else:
-                return ResponseUser(id = result[0], name = result[1], lastName = result[2], userName = result[3])                          
+                return ResponseUser(id = result[0], name = result[1], lastName = result[2], userName = result[3],popularity = result[4])                          
         except BaseException as error:
             print(f"Unexpected {error=}, {type(error)=}")
             return ResponseUser(id=-1)
@@ -543,7 +642,7 @@ class ServiceChefEnCasa(ChefEnCasaServicer):
             
             print(user)
             
-            recipe = Reciepe(idReciepe=row[0], title=row[1], description=row[2], photos=photos, ingredients=ingredients, category=category,stepts = stepts, prepatarionTimeMinutes=row[3], user=user)
+            recipe = Reciepe(idReciepe=row[0], title=row[1], description=row[2], photos=photos, ingredients=ingredients, category=category,stepts = stepts, prepatarionTimeMinutes=row[3], user=user,averageRanking = row[6], popularity = row[7])
             print(recipe)
             return ResponseRecipe(recipe=recipe)
         except BaseException as error:
@@ -621,16 +720,23 @@ class ServiceChefEnCasa(ChefEnCasaServicer):
             result = cursor.fetchone()
             
             nombre_usuario = result[3]
-            mensaje_popularidad = f'Usuario: {nombre_usuario}, Puntaje: {1}'
+            
+            puntaje = 1
+            mensaje_popularidad = {
+                'nombreUsuario': nombre_usuario,
+                'Puntaje': puntaje
+            }
+
+            # Convertir el diccionario a una cadena JSON
+            mensaje_popularidad_json = json.dumps(mensaje_popularidad)
         
             #Agregar la marca de tiempo como un encabezado
             fecha_hora_actual = datetime.datetime.now()
             headers = [('timestamp', str(fecha_hora_actual))]            
 
-            # Envia el mensaje al topic "Novedades" con los encabezados
-            producer.produce(topic='PopularidadUsuario', value=mensaje_popularidad, headers=headers)
-            
-            # Espera a que todos los mensajes se envíen 
+            # Envia el mensaje al topic "PopularidadUsuario" con los encabezados
+            producer.produce(topic='PopularidadUsuario', value=mensaje_popularidad_json, headers=headers)
+
             producer.flush()   
 
             return Response(message = "Follow succesfully")
@@ -666,18 +772,26 @@ class ServiceChefEnCasa(ChefEnCasaServicer):
             cursor.execute(query)
             result = cursor.fetchone()
             
-            nombre_usuario = result[3]
-            mensaje_popularidad = f'Usuario: {nombre_usuario}, Puntaje: {-1}'
+            nombre_usuario = result[3]            
+        
+            puntaje = -1
+            mensaje_popularidad = {
+                'nombreUsuario': nombre_usuario,
+                'Puntaje': puntaje
+            }
+
+            # Convertir el diccionario a una cadena JSON
+            mensaje_popularidad_json = json.dumps(mensaje_popularidad)
         
             #Agregar la marca de tiempo como un encabezado
             fecha_hora_actual = datetime.datetime.now()
             headers = [('timestamp', str(fecha_hora_actual))]            
 
-            # Envia el mensaje al topic "Novedades" con los encabezados
-            producer.produce(topic='PopularidadUsuario', value=mensaje_popularidad, headers=headers)
-            
-            # Espera a que todos los mensajes se envíen 
+            # Envia el mensaje al topic "PopularidadUsuario" con los encabezados
+            producer.produce(topic='PopularidadUsuario', value=mensaje_popularidad_json, headers=headers)
+
             producer.flush()   
+
             return Response(message = "UnFollow succesfully")
                            
              
@@ -692,6 +806,8 @@ class ServiceChefEnCasa(ChefEnCasaServicer):
             idUser = request.idUser
             idRecipe = request.idReciepe
             comment = request.comment
+            print("comentario")
+            print(idUser)
 
             # Envía un mensaje al topic Comentarios
             query = "SELECT u.id, u.name, u.last_name, u.username from users as u WHERE u.id = '{0}'".format(request.idUser)
@@ -703,33 +819,47 @@ class ServiceChefEnCasa(ChefEnCasaServicer):
             cursor.execute(query)
             result = cursor.fetchone() 
             titulo_receta = result[0]
+            # Crear un diccionario con los datos del comentario
+            comentario_data = {
+                    "nombre_usuario": nombre_usuario,
+                    "titulo_receta": titulo_receta,
+                    "comentario": comment
+            } 
 
-            mensaje_comentario = f'usuarioComentario: {nombre_usuario}, recetaComentada: {titulo_receta} , comentario: {comment}'
-            
-            print(mensaje_comentario)
-            #Agregar la marca de tiempo como un encabezado
+            # Convertir el diccionario a una cadena JSON
+            mensaje_comentario = json.dumps(comentario_data)
+
+            # Agregar la marca de tiempo como un encabezado
             fecha_hora_actual = datetime.datetime.now()
-            headers = [('timestamp', str(fecha_hora_actual))]            
+            headers = [('timestamp', str(fecha_hora_actual))]
 
-            # Envia el mensaje al topic "Comentarios" con los encabezados
-            producer.produce(topic='Comentarios', value=mensaje_comentario, headers=headers)
+            # Enviar el mensaje como JSON al topic "Comentarios" con los encabezados
+            producer.produce(topic='Comentarios', value=mensaje_comentario.encode('utf-8'), headers=headers)
             
             # Espera a que todos los mensajes se envíen 
             producer.flush()   
 
-            mensaje_popularidad = f'IdReceta: {idRecipe}, Puntaje: {1}'
+            #Mesanje para el topic "PopularidadReceta"
+            puntaje = 1
+            mensaje_popularidad = {
+                'IdReceta': idRecipe,
+                'Puntaje': puntaje
+            }
+
+            # Convertir el diccionario a una cadena JSON
+            mensaje_popularidad_json = json.dumps(mensaje_popularidad)
         
             #Agregar la marca de tiempo como un encabezado
             fecha_hora_actual = datetime.datetime.now()
             headers = [('timestamp', str(fecha_hora_actual))]            
 
             # Envia el mensaje al topic "PopularidadReceta" con los encabezados
-            producer.produce(topic='PopularidadReceta', value=mensaje_popularidad, headers=headers)
+            producer.produce(topic='PopularidadReceta', value=mensaje_popularidad_json, headers=headers)
             
             # Espera a que todos los mensajes se envíen 
             producer.flush()   
 
-            return Response(message = "Comment succesfully")       
+            return Response(message = "Comentario enviado con exito!")       
 
         
         except BaseException as error:
@@ -737,12 +867,42 @@ class ServiceChefEnCasa(ChefEnCasaServicer):
             print(f"Unexpected {error=}, {type(error)=}") 
             return Response(message = "Error")   
         
+    def GetAllCommentsByRecipe(self,request, context):
+        try:
+            print("------GetAllComments-------")
+            allComments = []
+            idRecipe = request.id
+            query = "SELECT rc.id, rc.id_user, rc.id_recipe, rc.comment, LEFT(rc.created_at::text, 16) FROM recipe_comments as rc WHERE id_recipe = '{0}'".format(idRecipe)
+            cursor.execute(query)
+
+            for row in cursor.fetchall():
+                
+                query_user = "SELECT s.username from users as s WHERE id = '{0}'".format(row[1])
+                cursor.execute(query_user)
+                username = cursor.fetchone()[0]
+                print("Comentario " + str(row[3]))
+                comment = Comment(idComment = row[0], idUser =  row[1], idRecipe = row[2] , comment = row[3] ,username = username,  timestamp = row[4])        
+                allComments.append(comment)            
+
+            print(allComments)
+            return ResponseComments(comments = allComments)        
+
+        
+        except BaseException as error:
+
+            print(f"Unexpected {error=}, {type(error)=}") 
+            return ResponseComments(comments = allComments)   
+        
     def RateRecipe(self,request, context):
         try:
             
+            print("--------------RateRecipe-----------------")
             idRecipe = request.idReciepe
             idUser = request.idUser
             clasification = request.clasification
+            print("id recipe " + str(idRecipe))
+            print("id user " + str(idUser))
+            print("clasification " + str(clasification))
             
             #Insert a la base
             query_clasification = "INSERT INTO recipe_classifications (id_recipe, id_user, clasificacion) VALUES('{0}','{1}','{2}')".format(idRecipe,idUser,clasification)
@@ -759,25 +919,148 @@ class ServiceChefEnCasa(ChefEnCasaServicer):
             db.commit()
             
             #Mesanje para el topic "PopularidadReceta"
-            mensaje_popularidad = f'IdReceta: {idRecipe}, Puntaje: {clasification}'
+            mensaje_popularidad = {
+                'IdReceta': idRecipe,
+                'Puntaje': clasification
+            }
+
+            # Convertir el diccionario a una cadena JSON
+            mensaje_popularidad_json = json.dumps(mensaje_popularidad)
         
             #Agregar la marca de tiempo como un encabezado
             fecha_hora_actual = datetime.datetime.now()
             headers = [('timestamp', str(fecha_hora_actual))]            
 
             # Envia el mensaje al topic "PopularidadReceta" con los encabezados
-            producer.produce(topic='PopularidadReceta', value=mensaje_popularidad, headers=headers)
+            producer.produce(topic='PopularidadReceta', value=mensaje_popularidad_json, headers=headers)
             
             # Espera a que todos los mensajes se envíen 
             producer.flush()   
 
-            return Response(message = "Qualify succesfully")       
+            print("--------------Qualify succesfully-----------------")
+            return Response(message = "Receta Calificada con éxito")       
 
         
         except BaseException as error:
             print(f"Unexpected {error=}, {type(error)=}") 
             db.rollback()
             return Response(message = "Error")  
+        
+    def GetTop10Users(self,request, context):
+        try:
+            topUsers = []
+            query_top = "SELECT s.id, s.name, s.username,  s.popularity FROM users as s where s.popularity is not null order by s.popularity desc limit 5"
+            cursor.execute(query_top)
+
+            for row in cursor.fetchall():
+                print(row[0])
+                print(row[1])
+                print(row[2])
+                print(row[3])
+                print("crear el objeto")
+                user = User(id=row[0], name=row[1], userName=row[2] , popularity=row[3])
+                print("agregar a la lista")
+                topUsers.append(user)
+
+            return ResponseUsers(users = topUsers)
+        
+        except BaseException as error:
+
+            print(f"Unexpected {error=}, {type(error)=}") 
+            return ResponseUsers(users = topUsers)  
+        
+    def GetTop10Recipes(self,request, context):
+        try:
+            alRecipes = []
+            query_top = "SELECT r.id, r.title, r.popularity FROM recipes as r where r.popularity is not null order by r.popularity desc limit 5"
+            cursor.execute(query_top)
+
+            for row in cursor.fetchall():
+                
+                print("crear el objeto")
+                recipe = Reciepe(idReciepe = row[0],title = row[1], popularity = row[2])
+                print("agregar a la lista")
+                alRecipes.append(recipe)
+
+            return ResponseUsers(recipes = alRecipes)
+        
+        except BaseException as error:
+
+            print(f"Unexpected {error=}, {type(error)=}") 
+            return ResponseRecipes(recipes = alRecipes)  
+        
+    def GetNovedades(self,request, context):
+        try:
+            allNews = []
+            timestamp_ms = int(time.time() * 1000)
+            group_id = f'novedades-consumer-{timestamp_ms}'
+            consumer_config = {
+                'bootstrap.servers': 'localhost:9092',
+                'group.id': group_id,
+                'auto.offset.reset': 'earliest'
+            }
+            
+            consumer = Consumer(consumer_config)
+            consumer.subscribe(['Novedades'])
+            data_list = []
+            contador = 0
+            while True:
+                msg = consumer.poll(1.0)
+                if msg is None:
+                    if(contador >4):
+                        break
+                    contador = contador + 1
+                    continue
+                if msg.error():
+                    if msg.error().code() == KafkaError._PARTITION_EOF:
+                        print('Llegamos al final de la partición en Novedades')
+                    else:
+                        print(f'Error en el consumidor de Novedades: {msg.error().str()}')
+                else:
+                    mensaje = json.loads(msg.value().decode("utf-8"))
+                    print(f'Mensaje recibido en Novedades: {mensaje}')
+                    # Obtiene el valor del encabezado "timestamp"
+                    headers = msg.headers()
+                    timestamp = None
+                    for header in headers:
+                        if header[0] == "timestamp":
+                            timestamp = header[1].decode("utf-8")
+                            break
+                    if timestamp is not None:
+                        # Crea un diccionario JSON con los datos
+                        data = {
+                            "Usuario": mensaje["Usuario"],
+                            "title": mensaje["title"],
+                            "URL Foto": mensaje["URL Foto"],
+                            "timestamp": timestamp
+                        }
+                        # Agrega el diccionario a la lista
+                        data_list.append(data)
+                        # Ordena la lista por timestamp de mayor a menor
+                        data_list = sorted(data_list, key=lambda x: x["timestamp"], reverse=True)
+                
+                        # Limita la lista a los 5 datos más recientes
+                        data_list = data_list[:5]
+
+
+
+
+            
+    
+
+
+            
+            for data in data_list:
+                novedad = Novedad(user = data["Usuario"],title = data["title"], url = data["URL Foto"])
+                allNews.append(novedad)
+
+            return ResponseNovedades(novedades = allNews)
+        
+        except BaseException as error:
+
+            print(f"Unexpected {error=}, {type(error)=}") 
+            return ResponseNovedades(novedades = allNews)  
+
 
 def start():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))

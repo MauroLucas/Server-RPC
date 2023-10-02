@@ -44,7 +44,8 @@ cursor.execute("CREATE TABLE IF NOT EXISTS recipe_steps (id SERIAL PRIMARY KEY, 
 cursor.execute("CREATE TABLE IF NOT EXISTS user_favorite_recipes (id SERIAL PRIMARY KEY, id_user INT NOT NULL, id_recipe INT NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (id_user) REFERENCES users(id), FOREIGN KEY (id_recipe) REFERENCES recipes(id));")
 cursor.execute("CREATE TABLE IF NOT EXISTS recipe_comments (id SERIAL PRIMARY KEY, id_user INT NOT NULL, id_recipe INT NOT NULL, comment TEXT NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (id_user) REFERENCES users(id), FOREIGN KEY (id_recipe) REFERENCES recipes(id));")
 cursor.execute("CREATE TABLE IF NOT EXISTS recipe_classifications (id SERIAL PRIMARY KEY,id_recipe INT NOT NULL,id_user INT NOT NULL,clasificacion INT NOT NULL CHECK (clasificacion >= 1 AND clasificacion <= 5),FOREIGN KEY (id_recipe) REFERENCES recipes(id),FOREIGN KEY (id_user) REFERENCES users(id));")
-
+cursor.execute("CREATE TABLE IF NOT EXISTS user_popularity (id SERIAL PRIMARY KEY,id_user INT NOT NULL,popularity INT,created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,FOREIGN KEY (id_user) REFERENCES users(id));")
+cursor.execute("CREATE TABLE IF NOT EXISTS recipe_popularity (id SERIAL PRIMARY KEY,id_recipe INT NOT NULL,popularity INT,created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,FOREIGN KEY (id_recipe) REFERENCES recipes(id));")
 print("The chefencasa database schema was created succesfully.")
 
 cursor.execute("INSERT INTO ingredient (name) VALUES ('Tomate'), ('Cebolla'), ('Pimiento'), ('Ajo'), ('Aceite de oliva'),('Sal'), ('Pimienta'), ('Carne de res'), ('Pollo'), ('Pescado');")
