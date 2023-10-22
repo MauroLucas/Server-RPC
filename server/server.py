@@ -11,7 +11,7 @@ from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
 db = psycopg2.connect(
     user="postgres",
-    password="root",
+    password="1234",
     host="localhost",
     port='5432',
     database = "chefencasa"
@@ -124,7 +124,7 @@ class ServiceChefEnCasa(ChefEnCasaServicer):
 
         try:
             query_recipes = """
-            SELECT * FROM recipes as r where r.id in (SELECT id_recipe FROM user_favorite_recipes as ufr WHERE ufr.id_user = {0})
+            SELECT * FROM recipes as r where isDraft = 0 and r.id in (SELECT id_recipe FROM user_favorite_recipes as ufr WHERE ufr.id_user = {0})
         """.format(request.id)
             
             cursor.execute(query_recipes)
@@ -205,37 +205,56 @@ class ServiceChefEnCasa(ChefEnCasaServicer):
             print(f"Unexpected {error=}, {type(error)=}")
 
     def GetRecipiesByFilters(self, request, context):
-        print(request)
-        print(type(request))
+        print("--------------GetRecipiesByFilters-----------------")
+        
+        print("prepTime")
+        print(request.prepatarionTimeMinutesMax)
+        print("title")
+        print(request.title)
+        print("category")
+        print(request.category.id)
 
         allRecipes = []
 
         try:
             # preparation_time_minutes lower than
             # title contains
+
+            # only add category if is not -1
+            # only add title if is not "."
+            # only add preparation_time_minutes if is not 0
+
+            category_where = "r.id_category = {0}".format(request.category.id) if (request.category.id != -1) else "r.id_category > 0"
+            title_where = "lower(title) like '%{0}%'".format(request.title.lower()) if request.title != "." else "lower(title) like '%%'"
+            prep_time_where = "r.preparation_time_minutes <= {0}".format(request.prepatarionTimeMinutesMax) if request.prepatarionTimeMinutesMax != 0 else "r.preparation_time_minutes > 0"
+
             query_recipes = """
-                SELECT * FROM recipes as r where r.id_category = {0} and title like '%{1}%' and r.preparation_time_minutes <= {2}
-            """.format(request.category.id, request.title.lower(), request.prepatarionTimeMinutesMax)
+                SELECT * FROM recipes as r where {0} and {1} and {2} and r.isDraft = 0
+            """.format(category_where, title_where, prep_time_where)
+            
+            # query_recipes = """
+            #     SELECT * FROM recipes as r where r.id_category = {0} and title like '%{1}%' and r.preparation_time_minutes <= {2} and r.isDraft = 0
+            # """.format(request.category.id, "" if request.title.lower() == "." else request.title.lower(), request.prepatarionTimeMinutesMax)
 
-            print("catId")
-            print(request.category.id)
+            # print("catId")
+            # print(request.category.id)
 
-            if (request.category.id == -1):
-                query_recipes = """
-                    SELECT * FROM recipes as r where lower(title) like '%{0}%' and r.preparation_time_minutes <= {1}
-                """.format(request.title.lower(), request.prepatarionTimeMinutesMax)
-                if (request.title == "."):
-                    query_recipes = """
-                        SELECT * FROM recipes as r where r.preparation_time_minutes <= {0}
-                    """.format(request.prepatarionTimeMinutesMax)
-                    if (request.category.id != -1):
-                        query_recipes = """
-                            SELECT * FROM recipes as r where r.preparation_time_minutes <= {0}
-                        """.format(request.prepatarionTimeMinutesMax)
-            if (request.title == "." and request.category.id != -1):
-                query_recipes = """
-                    SELECT * FROM recipes as r where r.id_category = {0}
-                """.format(request.category.id)
+            # if (request.category.id > 1):
+            #     query_recipes = """
+            #         SELECT * FROM recipes as r where lower(title) like '%{0}%' and r.preparation_time_minutes <= {1} and r.isDraft = 0
+            #     """.format(request.title.lower(), request.prepatarionTimeMinutesMax)
+            #     if (request.title == "." or request.title == "" or request.title == " " or request.title == None):
+            #         query_recipes = """
+            #             SELECT * FROM recipes as r where r.preparation_time_minutes <= {0} and r.isDraft = 0
+            #         """.format(request.prepatarionTimeMinutesMax)
+            #         if (request.category.id != -1):
+            #             query_recipes = """
+            #                 SELECT * FROM recipes as r where r.preparation_time_minutes <= {0} and r.isDraft = 0
+            #             """.format(request.prepatarionTimeMinutesMax) 
+            # if ((request.title == "." or request.title == "" or request.title == " " or request.title == None) and request.category.id != -1):
+            #     query_recipes = """
+            #         SELECT * FROM recipes as r where r.id_category = {0} and r.isDraft = 0
+            #     """.format(request.category.id)
 
             print(query_recipes)
             
@@ -345,6 +364,7 @@ class ServiceChefEnCasa(ChefEnCasaServicer):
             return ResponseIngredients(ingredients = allIngredients)
     def GetAllRecipes(self, request, context):
         allRecipes = []
+        print("---------------GetAllRecipes---------------")
         try:
 
             # inner join for recipe_photos and recipe_ingredients
@@ -472,7 +492,7 @@ class ServiceChefEnCasa(ChefEnCasaServicer):
         
         try:
             query = 1
-            query = "UPDATE recipes set title = '{0}', description = '{1}', preparation_time_minutes = '{2}', id_category = '{3}' WHERE id = '{4}';".format(request.title,request.description,request.prepatarionTimeMinutes,request.category.id,request.idReciepe)
+            query = "UPDATE recipes set title = '{0}', description = '{1}', isDraft = 0, preparation_time_minutes = '{2}', id_category = '{3}' WHERE id = '{4}';".format(request.title,request.description,request.prepatarionTimeMinutes,request.category.id,request.idReciepe)
             cursor.execute(query)
             
             query = "DELETE FROM recipe_photos WHERE id_recipe = '{0}';".format(request.idReciepe)
